@@ -1,0 +1,769 @@
+#### **1. Table: ecoles**
+**Commande** :
+```bash
+php artisan make:migration create_ecoles_table
+```
+**Code** :
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('ecoles', function (Blueprint $table) {
+            $table->id('id_ecole');
+            $table->string('nom', 200);
+            $table->string('logo', 255)->nullable();
+            $table->json('couleurs')->nullable();
+            $table->string('mascotte', 255)->nullable();
+            $table->dateTime('date_inscription');
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('ecoles');
+    }
+};
+```
+
+#### **2. Table: enseignants**
+**Commande** :
+```bash
+php artisan make:migration create_enseignants_table
+```
+**Code** :
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('enseignants', function (Blueprint $table) {
+            $table->id('id_enseignant');
+            $table->string('nom', 100);
+            $table->string('prenom', 100);
+            $table->string('email', 100)->unique();
+            $table->string('telephone', 20)->nullable();
+            $table->string('matiere_principale', 100)->nullable();
+            $table->date('date_embauche')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('enseignants');
+    }
+};
+```
+
+#### **3. Table: classes**
+**Commande** :
+```bash
+php artisan make:migration create_classes_table
+```
+**Code** :
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('classes', function (Blueprint $table) {
+            $table->id('id_classe');
+            $table->string('nom_classe', 50);
+            $table->string('niveau', 50);
+            $table->foreignId('id_enseignant_principal')->nullable()->constrained('enseignants', 'id_enseignant')->onDelete('set null');
+            $table->string('annee_scolaire', 9);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('classes');
+    }
+};
+```
+
+#### **4. Table: eleves**
+**Commande** :
+```bash
+php artisan make:migration create_eleves_table
+```
+**Code** :
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('eleves', function (Blueprint $table) {
+            $table->id('id_eleve');
+            $table->string('nom', 100);
+            $table->string('prenom', 100);
+            $table->date('date_naissance')->nullable();
+            $table->text('adresse')->nullable();
+            $table->string('telephone', 20)->nullable();
+            $table->string('email', 100)->nullable();
+            $table->foreignId('id_classe')->nullable()->constrained('classes', 'id_classe')->onDelete('set null');
+            $table->dateTime('date_inscription');
+            $table->index('id_eleve');
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('eleves');
+    }
+};
+```
+
+#### **5. Table: matieres**
+**Commande** :
+```bash
+php artisan make:migration create_matieres_table
+```
+**Code** :
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('matieres', function (Blueprint $table) {
+            $table->id('id_matiere');
+            $table->string('nom_matiere', 100);
+            $table->foreignId('id_classe')->constrained('classes', 'id_classe')->onDelete('cascade');
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('matieres');
+    }
+};
+```
+
+#### **6. Table: emplois_du_temps**
+**Commande** :
+```bash
+php artisan make:migration create_emplois_du_temps_table
+```
+**Code** :
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('emplois_du_temps', function (Blueprint $table) {
+            $table->id('id_emploi');
+            $table->foreignId('id_classe')->constrained('classes', 'id_classe')->onDelete('cascade');
+            $table->foreignId('id_enseignant')->constrained('enseignants', 'id_enseignant')->onDelete('cascade');
+            $table->foreignId('id_matiere')->constrained('matieres', 'id_matiere')->onDelete('cascade');
+            $table->string('jour', 10);
+            $table->time('heure_debut');
+            $table->time('heure_fin');
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('emplois_du_temps');
+    }
+};
+```
+
+#### **7. Table: notes**
+**Commande** :
+```bash
+php artisan make:migration create_notes_table
+```
+**Code** :
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('notes', function (Blueprint $table) {
+            $table->id('id_note');
+            $table->foreignId('id_eleve')->constrained('eleves', 'id_eleve')->onDelete('cascade');
+            $table->foreignId('id_matiere')->constrained('matieres', 'id_matiere')->onDelete('cascade');
+            $table->float('note');
+            $table->string('type_evaluation', 50);
+            $table->date('date_evaluation');
+            $table->text('commentaire')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('notes');
+    }
+};
+```
+
+#### **8. Table: absences**
+**Commande** :
+```bash
+php artisan make:migration create_absences_table
+```
+**Code** :
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('absences', function (Blueprint $table) {
+            $table->id('id_absence');
+            $table->foreignId('id_eleve')->constrained('eleves', 'id_eleve')->onDelete('cascade');
+            $table->date('date_absence');
+            $table->boolean('justifiee')->default(false);
+            $table->text('commentaire')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('absences');
+    }
+};
+```
+
+#### **9. Table: retards**
+**Commande** :
+```bash
+php artisan make:migration create_retards_table
+```
+**Code** :
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('retards', function (Blueprint $table) {
+            $table->id('id_retard');
+            $table->foreignId('id_eleve')->constrained('eleves', 'id_eleve')->onDelete('cascade');
+            $table->date('date_retard');
+            $table->time('heure_arrivee');
+            $table->boolean('justifie')->default(false);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('retards');
+    }
+};
+```
+
+#### **10. Table: factures**
+**Commande** :
+```bash
+php artisan make:migration create_factures_table
+```
+**Code** :
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('factures', function (Blueprint $table) {
+            $table->id('id_facture');
+            $table->foreignId('id_eleve')->constrained('eleves', 'id_eleve')->onDelete('cascade
+
+');
+            $table->decimal('montant', 10, 2);
+            $table->date('date_emission');
+            $table->date('date_echeance');
+            $table->enum('statut', ['en_attente', 'payee', 'en_retard'])->default('en_attente');
+            $table->string('methode_paiement', 50)->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('factures');
+    }
+};
+```
+
+#### **11. Table: paiements**
+**Commande** :
+```bash
+php artisan make:migration create_paiements_table
+```
+**Code** :
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('paiements', function (Blueprint $table) {
+            $table->id('id_paiement');
+            $table->foreignId('id_facture')->constrained('factures', 'id_facture')->onDelete('cascade');
+            $table->decimal('montant', 10, 2);
+            $table->dateTime('date_paiement');
+            $table->string('reference_paiement', 100);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('paiements');
+    }
+};
+```
+
+#### **12. Table: notifications**
+**Commande** :
+```bash
+php artisan make:migration create_notifications_table
+```
+**Code** :
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('notifications', function (Blueprint $table) {
+            $table->id('id_notification');
+            $table->unsignedBigInteger('destinataire_id');
+            $table->enum('type_destinataire', ['eleve', 'parent', 'enseignant']);
+            $table->string('titre', 200);
+            $table->text('message');
+            $table->dateTime('date_envoi');
+            $table->boolean('lue')->default(false);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('notifications');
+    }
+};
+```
+
+#### **13. Table: messages**
+**Commande** :
+```bash
+php artisan make:migration create_messages_table
+```
+**Code** :
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('messages', function (Blueprint $table) {
+            $table->id('id_message');
+            $table->unsignedBigInteger('expediteur_id');
+            $table->unsignedBigInteger('destinataire_id');
+            $table->text('contenu');
+            $table->dateTime('date_envoi');
+            $table->boolean('lu')->default(false);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('messages');
+    }
+};
+```
+
+#### **14. Table: evenements**
+**Commande** :
+```bash
+php artisan make:migration create_evenements_table
+```
+**Code** :
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('evenements', function (Blueprint $table) {
+            $table->id('id_evenement');
+            $table->string('titre', 200);
+            $table->text('description')->nullable();
+            $table->dateTime('date_debut');
+            $table->dateTime('date_fin');
+            $table->foreignId('id_classe')->nullable()->constrained('classes', 'id_classe')->onDelete('set null');
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('evenements');
+    }
+};
+```
+
+#### **15. Table: quizz_adaptatifs**
+**Commande** :
+```bash
+php artisan make:migration create_quizz_adaptatifs_table
+```
+**Code** :
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('quizz_adaptatifs', function (Blueprint $table) {
+            $table->id('id_quizz');
+            $table->foreignId('id_eleve')->constrained('eleves', 'id_eleve')->onDelete('cascade');
+            $table->foreignId('id_matiere')->constrained('matieres', 'id_matiere')->onDelete('cascade');
+            $table->json('questions');
+            $table->json('reponses')->nullable();
+            $table->float('score')->nullable();
+            $table->dateTime('date_creation');
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('quizz_adaptatifs');
+    }
+};
+```
+
+#### **16. Table: coaching_personnalise**
+**Commande** :
+```bash
+php artisan make:migration create_coaching_personnalise_table
+```
+**Code** :
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('coaching_personnalise', function (Blueprint $table) {
+            $table->id('id_coaching');
+            $table->foreignId('id_eleve')->constrained('eleves', 'id_eleve')->onDelete('cascade');
+            $table->text('conseils');
+            $table->dateTime('date_generation');
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('coaching_personnalise');
+    }
+};
+```
+
+#### **17. Table: devoirs_automatiques**
+**Commande** :
+```bash
+php artisan make:migration create_devoirs_automatiques_table
+```
+**Code** :
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('devoirs_automatiques', function (Blueprint $table) {
+            $table->id('id_devoir');
+            $table->foreignId('id_enseignant')->constrained('enseignants', 'id_enseignant')->onDelete('cascade');
+            $table->foreignId('id_matiere')->constrained('matieres', 'id_matiere')->onDelete('cascade');
+            $table->text('contenu');
+            $table->text('corrige')->nullable();
+            $table->dateTime('date_creation');
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('devoirs_automatiques');
+    }
+};
+```
+
+#### **18. Table: resumes_parents**
+**Commande** :
+```bash
+php artisan make:migration create_resumes_parents_table
+```
+**Code** :
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('resumes_parents', function (Blueprint $table) {
+            $table->id('id_resume');
+            $table->foreignId('id_eleve')->constrained('eleves', 'id_eleve')->onDelete('cascade');
+            $table->text('contenu');
+            $table->dateTime('date_envoi');
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('resumes_parents');
+    }
+};
+```
+
+#### **19. Table: rapports_analytiques**
+**Commande** :
+```bash
+php artisan make:migration create_rapports_analytiques_table
+```
+**Code** :
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('rapports_analytiques', function (Blueprint $table) {
+            $table->id('id_rapport');
+            $table->string('type_rapport', 100);
+            $table->json('contenu');
+            $table->dateTime('date_generation');
+            $table->foreignId('id_classe')->nullable()->constrained('classes', 'id_classe')->onDelete('set null');
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('rapports_analytiques');
+    }
+};
+```
+
+#### **20. Table: predictions_ia**
+**Commande** :
+```bash
+php artisan make:migration create_predictions_ia_table
+```
+**Code** :
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('predictions_ia', function (Blueprint $table) {
+            $table->id('id_prediction');
+            $table->string('type_prediction', 100);
+            $table->foreignId('id_eleve')->nullable()->constrained('eleves', 'id_eleve')->onDelete('set null');
+            $table->text('prediction');
+            $table->dateTime('date_generation');
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('predictions_ia');
+    }
+};
+```
+
+#### **21. Table: utilisateurs**
+**Commande** :
+```bash
+php artisan make:migration create_utilisateurs_table
+```
+**Code** :
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('utilisateurs', function (Blueprint $table) {
+            $table->id('id_utilisateur');
+            $table->string('email', 100)->unique();
+            $table->string('mot_de_passe', 255);
+            $table->enum('role', ['eleve', 'parent', 'enseignant', 'admin']);
+            $table->foreignId('id_eleve')->nullable()->constrained('eleves', 'id_eleve')->onDelete('cascade');
+            $table->foreignId('id_enseignant')->nullable()->constrained('enseignants', 'id_enseignant')->onDelete('cascade');
+            $table->dateTime('date_creation');
+            $table->index('email');
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('utilisateurs');
+    }
+};
+```
+
+#### **22. Table: sessions**
+**Commande** :
+```bash
+php artisan make:migration create_sessions_table
+```
+**Code** :
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('sessions', function (Blueprint $table) {
+            $table->id('id_session');
+            $table->foreignId('id_utilisateur')->constrained('utilisateurs', 'id_utilisateur')->onDelete('cascade');
+            $table->string('token', 255);
+            $table->dateTime('date_creation');
+            $table->dateTime('date_expiration');
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('sessions');
+    }
+};
+```

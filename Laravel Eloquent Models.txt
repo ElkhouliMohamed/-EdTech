@@ -1,0 +1,638 @@
+#### **1. Modèle: Ecole**
+**Fichier** : `app/Models/Ecole.php`
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Ecole extends Model
+{
+    protected $table = 'ecoles';
+    protected $primaryKey = 'id_ecole';
+    protected $fillable = ['nom', 'logo', 'couleurs', 'mascotte', 'date_inscription'];
+
+    // Relations
+    public function classes()
+    {
+        return $this->hasMany(Classe::class, 'id_ecole', 'id_ecole');
+    }
+}
+```
+
+#### **2. Modèle: Enseignant**
+**Fichier** : `app/Models/Enseignant.php`
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Enseignant extends Model
+{
+    protected $table = 'enseignants';
+    protected $primaryKey = 'id_enseignant';
+    protected $fillable = ['nom', 'prenom', 'email', 'telephone', 'matiere_principale', 'date_embauche'];
+
+    // Relations
+    public function classes()
+    {
+        return $this->hasMany(Classe::class, 'id_enseignant_principal', 'id_enseignant');
+    }
+
+    public function emploisDuTemps()
+    {
+        return $this->hasMany(EmploiDuTemps::class, 'id_enseignant', 'id_enseignant');
+    }
+
+    public function devoirsAutomatiques()
+    {
+        return $this->hasMany(DevoirAutomatique::class, 'id_enseignant', 'id_enseignant');
+    }
+
+    public function utilisateur()
+    {
+        return $this->hasOne(Utilisateur::class, 'id_enseignant', 'id_enseignant');
+    }
+}
+```
+
+#### **3. Modèle: Classe**
+**Fichier** : `app/Models/Classe.php`
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Classe extends Model
+{
+    protected $table = 'classes';
+    protected $primaryKey = 'id_classe';
+    protected $fillable = ['nom_classe', 'niveau', 'id_enseignant_principal', 'annee_scolaire'];
+
+    // Relations
+    public function enseignantPrincipal()
+    {
+        return $this->belongsTo(Enseignant::class, 'id_enseignant_principal', 'id_enseignant');
+    }
+
+    public function eleves()
+    {
+        return $this->hasMany(Eleve::class, 'id_classe', 'id_classe');
+    }
+
+    public function matieres()
+    {
+        return $this->hasMany(Matiere::class, 'id_classe', 'id_classe');
+    }
+
+    public function emploisDuTemps()
+    {
+        return $this->hasMany(EmploiDuTemps::class, 'id_classe', 'id_classe');
+    }
+
+    public function evenements()
+    {
+        return $this->hasMany(Evenement::class, 'id_classe', 'id_classe');
+    }
+
+    public function rapportsAnalytiques()
+    {
+        return $this->hasMany(RapportAnalytique::class, 'id_classe', 'id_classe');
+    }
+}
+```
+
+#### **4. Modèle: Eleve**
+**Fichier** : `app/Models/Eleve.php`
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Eleve extends Model
+{
+    protected $table = 'eleves';
+    protected $primaryKey = 'id_eleve';
+    protected $fillable = ['nom', 'prenom', 'date_naissance', 'adresse', 'telephone', 'email', 'id_classe', 'date_inscription'];
+
+    // Relations
+    public function classe()
+    {
+        return $this->belongsTo(Classe::class, 'id_classe', 'id_classe');
+    }
+
+    public function notes()
+    {
+        return $this->hasMany(Note::class, 'id_eleve', 'id_eleve');
+    }
+
+    public function absences()
+    {
+        return $this->hasMany(Absence::class, 'id_eleve', 'id_eleve');
+    }
+
+    public function retards()
+    {
+        return $this->hasMany(Retard::class, 'id_eleve', 'id_eleve');
+    }
+
+    public function factures()
+    {
+        return $this->hasMany(Facture::class, 'id_eleve', 'id_eleve');
+    }
+
+    public function quizzAdaptatifs()
+    {
+        return $this->hasMany(QuizzAdaptatif::class, 'id_eleve', 'id_eleve');
+    }
+
+    public function coachingPersonnalises()
+    {
+        return $this->hasMany(CoachingPersonnalise::class, 'id_eleve', 'id_eleve');
+    }
+
+    public function resumesParents()
+    {
+        return $this->hasMany(ResumeParent::class, 'id_eleve', 'id_eleve');
+    }
+
+    public function predictionsIa()
+    {
+        return $this->hasMany(PredictionIa::class, 'id_eleve', 'id_eleve');
+    }
+
+    public function utilisateur()
+    {
+        return $this->hasOne(Utilisateur::class, 'id_eleve', 'id_eleve');
+    }
+}
+```
+
+#### **5. Modèle: Matiere**
+**Fichier** : `app/Models/Matiere.php`
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Matiere extends Model
+{
+    protected $table = 'matieres';
+    protected $primaryKey = 'id_matiere';
+    protected $fillable = ['nom_matiere', 'id_classe'];
+
+    // Relations
+    public function classe()
+    {
+        return $this->belongsTo(Classe::class, 'id_classe', 'id_classe');
+    }
+
+    public function emploisDuTemps()
+    {
+        return $this->hasMany(EmploiDuTemps::class, 'id_matiere', 'id_matiere');
+    }
+
+    public function notes()
+    {
+        return $this->hasMany(Note::class, 'id_matiere', 'id_matiere');
+    }
+
+    public function quizzAdaptatifs()
+    {
+        return $this->hasMany(QuizzAdaptatif::class, 'id_matiere', 'id_matiere');
+    }
+
+    public function devoirsAutomatiques()
+    {
+        return $this->hasMany(DevoirAutomatique::class, 'id_matiere', 'id_matiere');
+    }
+}
+```
+
+#### **6. Modèle: EmploiDuTemps**
+**Fichier** : `app/Models/EmploiDuTemps.php`
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class EmploiDuTemps extends Model
+{
+    protected $table = 'emplois_du_temps';
+    protected $primaryKey = 'id_emploi';
+    protected $fillable = ['id_classe', 'id_enseignant', 'id_matiere', 'jour', 'heure_debut', 'heure_fin'];
+
+    // Relations
+    public function classe()
+    {
+        return $this->belongsTo(Classe::class, 'id_classe', 'id_classe');
+    }
+
+    public function enseignant()
+    {
+        return $this->belongsTo(Enseignant::class, 'id_enseignant', 'id_enseignant');
+    }
+
+    public function matiere()
+    {
+        return $this->belongsTo(Matiere::class, 'id_matiere', 'id_matiere');
+    }
+}
+```
+
+#### **7. Modèle: Note**
+**Fichier** : `app/Models/Note.php`
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Note extends Model
+{
+    protected $table = 'notes';
+    protected $primaryKey = 'id_note';
+    protected $fillable = ['id_eleve', 'id_matiere', 'note', 'type_evaluation', 'date_evaluation', 'commentaire'];
+
+    // Relations
+    public function eleve()
+    {
+        return $this->belongsTo(Eleve::class, 'id_eleve', 'id_eleve');
+    }
+
+    public function matiere()
+    {
+        return $this->belongsTo(Matiere::class, 'id_matiere', 'id_matiere');
+    }
+}
+```
+
+#### **8. Modèle: Absence**
+**Fichier** : `app/Models/Absence.php`
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Absence extends Model
+{
+    protected $table = 'absences';
+    protected $primaryKey = 'id_absence';
+    protected $fillable = ['id_eleve', 'date_absence', 'justifiee', 'commentaire'];
+
+    // Relations
+    public function eleve()
+    {
+        return $this->belongsTo(Eleve::class, 'id_eleve', 'id_eleve');
+    }
+}
+```
+
+#### **9. Modèle: Retard**
+**Fichier** : `app/Models/Retard.php`
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Retard extends Model
+{
+    protected $table = 'retards';
+    protected $primaryKey = 'id_retard';
+    protected $fillable = ['id_eleve', 'date_retard', 'heure_arrivee', 'justifie'];
+
+    // Relations
+    public function eleve()
+    {
+        return $this->belongsTo(Eleve::class, 'id_eleve', 'id_eleve');
+    }
+}
+```
+
+#### **10. Modèle: Facture**
+**Fichier** : `app/Models/Facture.php`
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Facture extends Model
+{
+    protected $table = 'factures';
+    protected $primaryKey = 'id_facture';
+    protected $fillable = ['id_eleve', 'montant', 'date_emission', 'date_echeance', 'statut', 'methode_paiement'];
+
+    // Relations
+    public function eleve()
+    {
+        return $this->belongsTo(Eleve::class, 'id_eleve', 'id_eleve');
+    }
+
+    public function paiements()
+    {
+        return $this->hasMany(Paiement::class, 'id_facture', 'id_facture');
+    }
+}
+```
+
+#### **11. Modèle: Paiement**
+**Fichier** : `app/Models/Paiement.php`
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Paiement extends Model
+{
+    protected $table = 'paiements';
+    protected $primaryKey = 'id_paiement';
+    protected $fillable = ['id_facture', 'montant', 'date_paiement', 'reference_paiement'];
+
+    // Relations
+    public function facture()
+    {
+        return $this->belongsTo(Facture::class, 'id_facture', 'id_facture');
+    }
+}
+```
+
+#### **12. Modèle: Notification**
+**Fichier** : `app/Models/Notification.php`
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Notification extends Model
+{
+    protected $table = 'notifications';
+    protected $primaryKey = 'id_notification';
+    protected $fillable = ['destinataire_id', 'type_destinataire', 'titre', 'message', 'date_envoi', 'lue'];
+}
+```
+
+#### **13. Modèle: Message**
+**Fichier** : `app/Models/Message.php`
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Message extends Model
+{
+    protected $table = 'messages';
+    protected $primaryKey = 'id_message';
+    protected $fillable = ['expediteur_id', 'destinataire_id', 'contenu', 'date_envoi', 'lu'];
+}
+```
+
+#### **14. Modèle: Evenement**
+**Fichier** : `app/Models/Evenement.php`
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Evenement extends Model
+{
+    protected $table = 'evenements';
+    protected $primaryKey = 'id_evenement';
+    protected $fillable = ['titre', 'description', 'date_debut', 'date_fin', 'id_classe'];
+
+    // Relations
+    public function classe()
+    {
+        return $this->belongsTo(Classe::class, 'id_classe', 'id_classe');
+    }
+}
+```
+
+#### **15. Modèle: QuizzAdaptatif**
+**Fichier** : `app/Models/QuizzAdaptatif.php`
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class QuizzAdaptatif extends Model
+{
+    protected $table = 'quizz_adaptatifs';
+    protected $primaryKey = 'id_quizz';
+    protected $fillable = ['id_eleve', 'id_matiere', 'questions', 'reponses', 'score', 'date_creation'];
+
+    // Relations
+    public function eleve()
+    {
+        return $this->belongsTo(Eleve::class, 'id_eleve', 'id_eleve');
+    }
+
+    public function matiere()
+    {
+        return $this->belongsTo(Matiere::class, 'id_matiere', 'id_matiere');
+    }
+}
+```
+
+#### **16. Modèle: CoachingPersonnalise**
+**Fichier** : `app/Models/CoachingPersonnalise.php`
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class CoachingPersonnalise extends Model
+{
+    protected $table = 'coaching_personnalise';
+    protected $primaryKey = 'id_coaching';
+    protected $fillable = ['id_eleve', 'conseils', 'date_generation'];
+
+    // Relations
+    public function eleve()
+    {
+        return $this->belongsTo(Eleve::class, 'id_eleve', 'id_eleve');
+    }
+}
+```
+
+#### **17. Modèle: DevoirAutomatique**
+**Fichier** : `app/Models/DevoirAutomatique.php`
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class DevoirAutomatique extends Model
+{
+    protected $table = 'devoirs_automatiques';
+    protected $primaryKey = 'id_devoir';
+    protected $fillable = ['id_enseignant', 'id_matiere', 'contenu', 'corrige', 'date_creation'];
+
+    // Relations
+    public function enseignant()
+    {
+        return $this->belongsTo(Enseignant::class, 'id_enseignant', 'id_enseignant');
+    }
+
+    public function matiere()
+    {
+        return $this->belongsTo(Matiere::class, 'id_matiere', 'id_matiere');
+    }
+}
+```
+
+#### **18. Modèle: ResumeParent**
+**Fichier** : `app/Models/ResumeParent.php`
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class ResumeParent extends Model
+{
+    protected $table = 'resumes_parents';
+    protected $primaryKey = 'id_resume';
+    protected $fillable = ['id_eleve', 'contenu', 'date_envoi'];
+
+    // Relations
+    public function eleve()
+    {
+        return $this->belongsTo(Eleve::class, 'id_eleve', 'id_eleve');
+    }
+}
+```
+
+#### **19. Modèle: RapportAnalytique**
+**Fichier** : `app/Models/RapportAnalytique.php`
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class RapportAnalytique extends Model
+{
+    protected $table = 'rapports_analytiques';
+    protected $primaryKey = 'id_rapport';
+    protected $fillable = ['type_rapport', 'contenu', 'date_generation', 'id_classe'];
+
+    // Relations
+    public function classe()
+    {
+        return $this->belongsTo(Classe::class, 'id_classe', 'id_classe');
+    }
+}
+```
+
+#### **20. Modèle: PredictionIa**
+**Fichier** : `app/Models/PredictionIa.php`
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class PredictionIa extends Model
+{
+    protected $table = 'predictions_ia';
+    protected $primaryKey = 'id_prediction';
+    protected $fillable = ['type_prediction', 'id_eleve', 'prediction', 'date_generation'];
+
+    // Relations
+    public function eleve()
+    {
+        return $this->belongsTo(Eleve::class, 'id_eleve', 'id_eleve');
+    }
+}
+```
+
+#### **21. Modèle: Utilisateur**
+**Fichier** : `app/Models/Utilisateur.php`
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Utilisateur extends Model
+{
+    protected $table = 'utilisateurs';
+    protected $primaryKey = 'id_utilisateur';
+    protected $fillable = ['email', 'mot_de_passe', 'role', 'id_eleve', 'id_enseignant', 'date_creation'];
+
+    // Relations
+    public function eleve()
+    {
+        return $this->belongsTo(Eleve::class, 'id_eleve', 'id_eleve');
+    }
+
+    public function enseignant()
+    {
+        return $this->belongsTo(Enseignant::class, 'id_enseignant', 'id_enseignant');
+    }
+
+    public function sessions()
+    {
+        return $this->hasMany(Session::class, 'id_utilisateur', 'id_utilisateur');
+    }
+}
+```
+
+#### **22. Modèle: Session**
+**Fichier** : `app/Models/Session.php`
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Session extends Model
+{
+    protected $table = 'sessions';
+    protected $primaryKey = 'id_session';
+    protected $fillable = ['id_utilisateur', 'token', 'date_creation', 'date_expiration'];
+
+    // Relations
+    public function utilisateur()
+    {
+        return $this->belongsTo(Utilisateur::class, 'id_utilisateur', 'id_utilisateur');
+    }
+}
+```
